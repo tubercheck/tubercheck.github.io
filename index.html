@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tuber Check</title>
+    <style>
+    body {
+      font-family: Verdana, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+
+    #banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    #banner img {
+      max-width: 100%;
+      height: auto;
+      max-height: 200px;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 20px;
+      padding: 15px;
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #loading-gif {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+
+    #loading-gif img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    #loading-text {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+
+    #summary {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #min-age {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    #bar-graph {
+      margin-top: 20px;
+    }
+
+    .bar-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .bar-table th {
+      text-align: left;
+    }
+
+    .bar-table td {
+      padding: 10px;
+    }
+
+    .bar-label {
+      font-size: 20px;
+      font-weight: bold;
+      margin-right: 10px;
+      width: 150px;
+    }
+
+    .bar-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .bar {
+      height: 40px;
+      margin-right: 10px;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding-left: 10px;
+    }
+
+    .bar.green {
+      background-color: #4CAF50;
+    }
+
+    .bar.amber {
+      background-color: #FFA500;
+    }
+
+    .bar.red {
+      background-color: #FF0000;
+    }
+
+    #notes {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #notes-list {
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 20px;
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    #reset-btn {
+      padding: 15px 30px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      margin-top: 80px;
+    }
+
+    #footer {
+      margin-top: 50px;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    #email-link {
+      color: #007bff;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+    <div id="banner">
+        <img src="tubercheck.png" alt="Tuber Check Banner">
+    </div>
+    <label for="video-url">Youtube Video Url:</label>
+    <br>
+    <input type="text" id="video-url" size="40">
+    <br>
+    <p>Example: https://www.youtube.com/watch?v=example</p>
+    <br>
+    <button id="check-btn" disabled>Check Video</button>
+    <div id="loading-gif">
+        <img src="https://cdn.dribbble.com/users/759392/screenshots/9201914/media/6432c05968a1592b64b8feaccc2a7280.gif" alt="Loading...">
+        <div id="loading-text">Transcribing & analysing video for you now...</div>
+    </div>
+    <div id="summary"></div>
+    <div id="min-age"></div>
+    <div id="bar-graph"></div>
+    <div id="notes"></div>
+    <ul id="notes-list"></ul>
+    <button id="reset-btn" style="display: none;">Reset</button>
+    <div id="footer">
+        <a id="email-link" href="mailto:ajchesney@gmail.com">Made by TiGz. Feedback encouraged.</a>
+    </div>
+</div>
+
+<script>
+    const videoUrlInput = document.getElementById("video-url");
+    const checkBtn = document.getElementById("check-btn");
+    const loadingGif = document.getElementById("loading-gif");
+    const loadingText = document.getElementById("loading-text");
+    const summaryDiv = document.getElementById("summary");
+    const minAgeDiv = document.getElementById("min-age");
+    const barGraphDiv = document.getElementById("bar-graph");
+    const notesDiv = document.getElementById("notes");
+    const notesList = document.getElementById("notes-list");
+    const resetBtn = document.getElementById("reset-btn");
+
+    videoUrlInput.addEventListener("input", () => {
+      checkBtn.disabled = !isValidUrl(videoUrlInput.value);
+    });
+
+    checkBtn.addEventListener("click", () => {
+      checkBtn.disabled = true;
+      loadingGif.style.display = "block";
+      loadingText.style.display = "block";
+      const requestBody = JSON.stringify({ url: videoUrlInput.value });
+      fetch("https://makxzivnzvmklntjyukk.functions.supabase.co/check-video", {
+        method: "POST",
+        body: requestBody
+      })
+        .then(response => response.json())
+        .then(data => {
+          loadingGif.style.display = "none";
+          loadingText.style.display = "none";
+          if (data.error) {
+            displayError(data.error);
+            resetBtn.style.display = "inline-block";
+          } else {
+            displayReport(data);
+            resetBtn.style.display = "inline-block";
+          }
+        })
+        .catch(error => {
+          loadingGif.style.display = "none";
+          loadingText.style.display = "none";
+          console.log(error);
+          displayError("An error occurred while processing.");
+          resetBtn.style.display = "inline-block";
+        });
+    });
+
+    function isValidUrl(url) {
+      // Add your URL validation logic here
+      return url !== "";
+    }
+
+    function displayReport(data) {
+      summaryDiv.textContent = "Summary";
+      const summaryText = document.createElement("p");
+      summaryText.textContent = data.summary;
+      summaryDiv.appendChild(summaryText);
+
+      minAgeDiv.textContent = `Suggested Minimum Age: ${data.min_age_rating}`;
+
+      const barTable = document.createElement("table");
+      barTable.classList.add("bar-table");
+
+      const labels = ["Bad Language", "Sexual Content", "Coercion"];
+      const values = [data.bad_language, data.sexual_content, data.coercion];
+
+      for (let i = 0; i < labels.length; i++) {
+        const row = document.createElement("tr");
+
+        const labelCell = document.createElement("td");
+        labelCell.classList.add("bar-label");
+        labelCell.textContent = labels[i];
+        row.appendChild(labelCell);
+
+        const barCell = document.createElement("td");
+        const barContainer = document.createElement("div");
+        barContainer.classList.add("bar-container");
+
+        const bar = document.createElement("div");
+        bar.classList.add("bar");
+
+        if (values[i] >= 5) {
+          bar.classList.add("red");
+        } else if (values[i] >= 2) {
+          bar.classList.add("amber");
+        } else {
+          bar.classList.add("green");
+        }
+
+        bar.style.width = `${values[i] * 10}%`;
+        bar.textContent = values[i];
+
+        barContainer.appendChild(bar);
+        barCell.appendChild(barContainer);
+        row.appendChild(barCell);
+
+        barTable.appendChild(row);
+      }
+
+      barGraphDiv.appendChild(barTable);
+
+      notesDiv.textContent = "Notes";
+      notesList.innerHTML = "";
+      data.notes.forEach(note => {
+        const noteItem = document.createElement("li");
+        noteItem.textContent = note;
+        notesList.appendChild(noteItem);
+      });
+    }
+
+    function displayError(error) {
+      const errorDiv = document.createElement("div");
+      errorDiv.textContent = `Error: ${error}`;
+      errorDiv.style.color = "red";
+      notesDiv.appendChild(errorDiv);
+    }
+
+    resetBtn.addEventListener("click", () => {
+      videoUrlInput.value = "";
+      checkBtn.disabled = false;
+      loadingGif.style.display = "none";
+      loadingText.style.display = "none";
+      summaryDiv.textContent = "";
+      minAgeDiv.textContent = "";
+      barGraphDiv.textContent = "";
+      notesDiv.textContent = "";
+      notesList.innerHTML = "";
+      resetBtn.style.display = "none";
+    });
+  </script>
+</body>
+</html>
