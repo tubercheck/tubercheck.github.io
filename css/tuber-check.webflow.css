@@ -23,8 +23,7 @@
   object-fit: fill;
   flex-direction: row;
   justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin: 20px;
   font-family: IBM Plex Mono, sans-serif;
   font-size: 30px;
   display: flex;
