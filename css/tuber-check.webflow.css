@@ -128,9 +128,7 @@
 }
 
 .div-block {
-  margin-bottom: 40px;
-  margin-left: 100px;
-  margin-right: 100px;
+  margin: 40px 100px 20px;
   font-family: IBM Plex Mono, sans-serif;
   display: block;
 }
@@ -243,6 +241,21 @@
   background-color: #ff192b;
   border-radius: 13px;
   align-self: flex-start;
+}
+
+.image-6 {
+  max-width: 200px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.heading-2 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.container-5 {
+  margin-top: 20px;
 }
 
 @media screen and (max-width: 991px) {
